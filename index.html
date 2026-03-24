@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta http-equiv="Permissions-Policy" content="camera=*">
-<title>FACE.AI — Análise Facial</title>
+<title>FACE.AI — Verificação de Idade</title>
 <script defer src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api/dist/face-api.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
 <style>
@@ -13,24 +13,21 @@
     --border: #1e1e2e;
     --accent: #00ffcc;
     --accent2: #ff3cac;
-    --accent3: #ffee00;
     --text: #e8e8f0;
     --muted: #555570;
     --card: #14141f;
   }
   * { margin:0; padding:0; box-sizing:border-box; }
   body {
-    background: var(--bg); color: var(--text);
-    font-family: 'Space Mono', monospace;
-    min-height: 100vh; display: flex; flex-direction: column; align-items: center;
+    background:var(--bg); color:var(--text);
+    font-family:'Space Mono',monospace;
+    min-height:100vh; display:flex; flex-direction:column; align-items:center;
   }
   body::before {
     content:''; position:fixed; inset:0;
-    background: repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,255,204,0.012) 2px,rgba(0,255,204,0.012) 4px);
+    background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,255,204,0.012) 2px,rgba(0,255,204,0.012) 4px);
     pointer-events:none; z-index:999;
   }
-
-  /* Loading overlay */
   #loading-overlay {
     position:fixed; inset:0; background:var(--bg);
     display:flex; flex-direction:column; align-items:center; justify-content:center;
@@ -41,8 +38,7 @@
   .load-sub { font-size:0.62rem; color:var(--muted); letter-spacing:0.18em; text-transform:uppercase; }
   .load-bar-wrap { width:240px; height:3px; background:var(--border); }
   .load-bar { height:100%; width:0%; background:var(--accent); transition:width 0.4s ease; }
-  #load-status { font-size:0.62rem; color:var(--muted); letter-spacing:0.1em; min-height:1em; text-align:center; }
-
+  #load-status { font-size:0.62rem; color:var(--muted); letter-spacing:0.1em; min-height:1em; text-align:center; max-width:280px; }
   header {
     width:100%; padding:1.5rem 2.5rem; border-bottom:1px solid var(--border);
     display:flex; align-items:baseline; gap:1rem;
@@ -50,13 +46,10 @@
   .logo { font-family:'Syne',sans-serif; font-weight:800; font-size:1.5rem; color:var(--accent); }
   .logo span { color:var(--accent2); }
   .tagline { font-size:0.62rem; color:var(--muted); letter-spacing:0.15em; text-transform:uppercase; }
-  .blink { width:8px; height:8px; border-radius:50%; background:var(--accent); margin-left:auto; animation:blink 1.2s infinite; }
+  .blink { width:8px; height:8px; border-radius:50%; background:var(--accent); margin-left:auto; animation:blink 1.2s infinite; flex-shrink:0; }
   @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
-
   main { width:100%; max-width:960px; padding:2.5rem 2rem; display:flex; flex-direction:column; align-items:center; gap:2rem; }
-
   .camera-section { width:100%; display:grid; grid-template-columns:1fr 1fr; gap:1.5rem; align-items:start; }
-
   .cam-frame {
     position:relative; background:var(--card); border:1px solid var(--border);
     aspect-ratio:4/3; overflow:hidden;
@@ -65,24 +58,14 @@
   .cam-frame::after  { content:''; position:absolute; bottom:0; right:0; width:18px; height:18px; border-bottom:2px solid var(--accent); border-right:2px solid var(--accent); z-index:5; }
   .corner-tr { position:absolute; top:0; right:0; width:18px; height:18px; border-top:2px solid var(--accent); border-right:2px solid var(--accent); z-index:5; }
   .corner-bl { position:absolute; bottom:0; left:0; width:18px; height:18px; border-bottom:2px solid var(--accent); border-left:2px solid var(--accent); z-index:5; }
-
   .cam-label {
     position:absolute; top:0.6rem; left:0.6rem;
     font-size:0.58rem; letter-spacing:0.18em; color:var(--accent);
     background:rgba(0,0,0,0.75); padding:0.2rem 0.45rem; z-index:6; text-transform:uppercase;
   }
-  .live-badge {
-    display:none; position:absolute; bottom:0.6rem; right:0.6rem;
-    font-size:0.58rem; letter-spacing:0.15em; color:#000; background:var(--accent);
-    padding:0.2rem 0.5rem; z-index:6; text-transform:uppercase; animation:blink 1.5s infinite;
-  }
-  .live-badge.show { display:block; }
-
   #video { width:100%; height:100%; object-fit:cover; display:block; transform:scaleX(-1); }
   #snapshot { width:100%; height:100%; object-fit:cover; display:none; }
   #canvas { display:none; }
-  #overlay { position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:4; }
-
   .scan-line {
     position:absolute; left:0; right:0; height:2px;
     background:linear-gradient(90deg,transparent,var(--accent),transparent);
@@ -90,8 +73,6 @@
   }
   .scan-line.active { opacity:1; }
   @keyframes scan { 0%{top:0} 100%{top:100%} }
-
-  /* Results */
   .results-panel {
     background:var(--card); border:1px solid var(--border); padding:1.5rem;
     display:flex; flex-direction:column; gap:1.1rem; min-height:240px;
@@ -104,13 +85,10 @@
   .result-bar { height:3px; background:var(--border); width:100%; overflow:hidden; }
   .result-bar-fill { height:100%; width:0%; background:var(--accent); transition:width 0.9s cubic-bezier(0.16,1,0.3,1); }
   .result-bar-fill.pink { background:var(--accent2); }
-  .result-bar-fill.yellow { background:var(--accent3); }
   .confidence { font-size:0.62rem; color:var(--muted); }
   .empty-state { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:0.5rem; opacity:0.3; text-align:center; }
   .empty-state .icon { font-size:2rem; }
   .empty-state p { font-size:0.68rem; letter-spacing:0.08em; color:var(--muted); }
-
-  /* Buttons */
   .controls { display:flex; gap:0.9rem; flex-wrap:wrap; justify-content:center; }
   .btn { font-family:'Space Mono',monospace; font-size:0.72rem; letter-spacing:0.12em; text-transform:uppercase; padding:0.85rem 1.8rem; border:none; cursor:pointer; transition:all 0.2s; outline:none; }
   .btn-primary { background:var(--accent); color:#000; clip-path:polygon(0 0,calc(100% - 7px) 0,100% 7px,100% 100%,7px 100%,0 calc(100% - 7px)); }
@@ -119,23 +97,31 @@
   .btn-secondary { background:transparent; color:var(--accent2); border:1px solid var(--accent2); }
   .btn-secondary:hover:not(:disabled) { background:rgba(255,60,172,0.1); }
   .btn-secondary:disabled { opacity:0.3; cursor:not-allowed; }
-  .btn-live { background:transparent; color:var(--accent3); border:1px solid var(--accent3); }
-  .btn-live:hover:not(:disabled) { background:rgba(255,238,0,0.1); }
-  .btn-live:disabled { opacity:0.3; cursor:not-allowed; }
-  .btn-live.active { background:rgba(255,238,0,0.15); }
-
+  .btn-vuse {
+    font-family:'Space Mono',monospace; font-size:0.78rem; letter-spacing:0.12em; text-transform:uppercase;
+    background:#e8002d; color:#fff; border:none; padding:0.95rem 2.5rem; cursor:pointer;
+    clip-path:polygon(0 0,calc(100% - 7px) 0,100% 7px,100% 100%,7px 100%,0 calc(100% - 7px));
+    transition:all 0.3s; display:inline-block;
+  }
+  .btn-vuse:hover:not(:disabled) { background:#c4001f; transform:translateY(-2px); }
+  .btn-vuse:disabled { opacity:0.25; cursor:not-allowed; filter:grayscale(1); }
+  .block-msg {
+    display:none; width:100%; max-width:600px; text-align:center;
+    padding:1.4rem 1.5rem; border:1px solid rgba(255,60,172,0.4); background:rgba(255,60,172,0.07);
+  }
+  .block-msg.visible { display:block; }
+  .block-icon { font-size:2rem; margin-bottom:0.5rem; }
+  .block-title { font-family:'Syne',sans-serif; font-size:1rem; font-weight:700; color:var(--accent2); margin-bottom:0.5rem; }
+  .block-sub { font-size:0.65rem; color:var(--muted); letter-spacing:0.08em; line-height:1.7; }
   .loading-dots { display:none; align-items:center; gap:0.4rem; font-size:0.68rem; color:var(--muted); letter-spacing:0.1em; }
   .loading-dots.active { display:flex; }
   .dot { width:6px; height:6px; border-radius:50%; background:var(--accent); animation:dotpulse 1.4s infinite; }
   .dot:nth-child(2){animation-delay:0.2s} .dot:nth-child(3){animation-delay:0.4s}
   @keyframes dotpulse{0%,80%,100%{transform:scale(0.6);opacity:0.4}40%{transform:scale(1);opacity:1}}
-
   .error-msg { color:var(--accent2); font-size:0.68rem; text-align:center; display:none; padding:0.7rem 1rem; border:1px solid rgba(255,60,172,0.3); background:rgba(255,60,172,0.05); width:100%; max-width:600px; }
   .error-msg.visible { display:block; }
-
   .status-bar { width:100%; border-top:1px solid var(--border); padding:0.7rem 2.5rem; display:flex; align-items:center; gap:1rem; font-size:0.62rem; color:var(--muted); letter-spacing:0.1em; margin-top:auto; }
   #status-msg { color:var(--accent); }
-
   @media (max-width:620px) {
     .camera-section { grid-template-columns:1fr; }
     header { padding:1.2rem 1.5rem; flex-wrap:wrap; }
@@ -154,7 +140,7 @@
 
 <header>
   <div class="logo">FACE<span>.</span>AI</div>
-  <div class="tagline">Análise 100% local — sem API key</div>
+  <div class="tagline">Verificação de idade por IA</div>
   <div class="blink"></div>
 </header>
 
@@ -165,18 +151,15 @@
       <div class="corner-bl"></div>
       <div class="cam-label" id="cam-label">AGUARDANDO</div>
       <div class="scan-line" id="scan-line"></div>
-      <div class="live-badge" id="live-badge">● LIVE</div>
       <video id="video" autoplay playsinline muted></video>
-      <canvas id="overlay"></canvas>
       <img id="snapshot" alt="Foto capturada" />
       <canvas id="canvas"></canvas>
     </div>
-
     <div class="results-panel">
       <div class="panel-title">// Análise — Resultados</div>
       <div class="empty-state" id="empty-state">
         <div class="icon">◈</div>
-        <p>Ligue a câmera e capture<br>uma foto para analisar</p>
+        <p>Ligue a câmera e tire<br>uma foto para analisar</p>
       </div>
       <div class="loading-dots" id="loading-dots">
         <div class="dot"></div><div class="dot"></div><div class="dot"></div>
@@ -194,9 +177,9 @@
         <div class="confidence" id="conf-sex"></div>
       </div>
       <div class="result-item" id="res-mood">
-        <div class="result-label">Sentimento dominante</div>
+        <div class="result-label">Sentimento</div>
         <div class="result-value" id="val-mood">—</div>
-        <div class="result-bar"><div class="result-bar-fill yellow" id="bar-mood"></div></div>
+        <div class="result-bar"><div class="result-bar-fill" id="bar-mood"></div></div>
         <div class="confidence" id="conf-mood"></div>
       </div>
     </div>
@@ -207,53 +190,62 @@
   <div class="controls">
     <button class="btn btn-primary" id="btn-start" onclick="startCamera()" disabled>▶ Ligar câmera</button>
     <button class="btn btn-primary" id="btn-capture" onclick="capture()" disabled>◉ Tirar foto</button>
-    <button class="btn btn-live" id="btn-live" onclick="toggleLive()" disabled>◈ Análise ao vivo</button>
     <button class="btn btn-secondary" id="btn-reset" onclick="resetCam()" disabled>↺ Nova foto</button>
   </div>
+
+  <div class="block-msg" id="block-msg">
+    <div class="block-icon">🚫</div>
+    <div class="block-title">Acesso não permitido</div>
+    <div class="block-sub">Nossa análise indica que você possui menos de 21 anos.<br>Este conteúdo é exclusivo para maiores de 21 anos.</div>
+  </div>
+
+  <div id="vuse-wrap">
+    <button class="btn-vuse" id="btn-vuse" disabled onclick="window.open('https://www.vuse.com/cl/es','_blank')">↗ Acessar site Vuse</button>
+  </div>
+
 </main>
 
 <div class="status-bar">
-  <span>FACE.AI v2.0 — face-api.js</span>
+  <span>FACE.AI v2.0</span>
   <span>—</span>
   <span id="status-msg">CARREGANDO MODELOS</span>
 </div>
 
 <script>
 const MODEL_URL = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api/model';
-const EMOTION_LABELS = { happy:'Feliz 😄', sad:'Triste 😢', angry:'Raiva 😠', fearful:'Medo 😨', disgusted:'Nojo 🤢', surprised:'Surpreso 😲', neutral:'Neutro 😐' };
-const GENDER_PT = { male:'Masculino', female:'Feminino' };
+const EMOTIONS = { happy:'Feliz 😄', sad:'Triste 😢', angry:'Raiva 😠', fearful:'Medo 😨', disgusted:'Nojo 🤢', surprised:'Surpreso 😲', neutral:'Neutro 😐' };
+const GENDERS  = { male:'Masculino', female:'Feminino' };
 
-const video=document.getElementById('video'), canvas=document.getElementById('canvas'),
-  overlay=document.getElementById('overlay'), snapshot=document.getElementById('snapshot'),
-  btnStart=document.getElementById('btn-start'), btnCapture=document.getElementById('btn-capture'),
-  btnLive=document.getElementById('btn-live'), btnReset=document.getElementById('btn-reset'),
-  scanLine=document.getElementById('scan-line'), camLabel=document.getElementById('cam-label'),
-  liveBadge=document.getElementById('live-badge'), statusMsg=document.getElementById('status-msg'),
-  errorMsg=document.getElementById('error-msg'), emptyState=document.getElementById('empty-state'),
-  loadingDots=document.getElementById('loading-dots'), loadBar=document.getElementById('load-bar'),
-  loadStatus=document.getElementById('load-status'), loadOverlay=document.getElementById('loading-overlay');
+const $ = id => document.getElementById(id);
+const video=$('video'), canvas=$('canvas'), snapshot=$('snapshot');
+const btnStart=$('btn-start'), btnCapture=$('btn-capture'), btnReset=$('btn-reset');
+const scanLine=$('scan-line'), camLabel=$('cam-label'), statusMsg=$('status-msg');
+const errorMsg=$('error-msg'), emptyState=$('empty-state'), loadingDots=$('loading-dots');
+const loadBar=$('load-bar'), loadStatus=$('load-status'), loadOverlay=$('loading-overlay');
 
-let stream=null, liveMode=false, liveInterval=null, modelsReady=false;
+let stream = null;
 
-const setStatus = m => statusMsg.textContent = m;
-const showError = m => { errorMsg.textContent=m; errorMsg.classList.add('visible'); };
+const setStatus = t => statusMsg.textContent = t;
+const showError = t => { errorMsg.textContent=t; errorMsg.classList.add('visible'); };
 const hideError = () => errorMsg.classList.remove('visible');
 
 async function loadModels() {
   const steps = [
-    { label:'Detector facial (TinyFaceDetector)...', fn:() => faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL) },
-    { label:'Modelo idade & gênero...', fn:() => faceapi.nets.ageGenderNet.loadFromUri(MODEL_URL) },
-    { label:'Modelo de expressões...', fn:() => faceapi.nets.faceExpressionNet.loadFromUri(MODEL_URL) },
+    { label:'Detector facial...', fn:()=>faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL) },
+    { label:'Modelo idade & gênero...', fn:()=>faceapi.nets.ageGenderNet.loadFromUri(MODEL_URL) },
+    { label:'Modelo de expressões...', fn:()=>faceapi.nets.faceExpressionNet.loadFromUri(MODEL_URL) },
   ];
   for (let i=0; i<steps.length; i++) {
     loadStatus.textContent = steps[i].label;
     loadBar.style.width = ((i/steps.length)*85)+'%';
     await steps[i].fn();
   }
-  loadBar.style.width='100%'; loadStatus.textContent='Modelos prontos!';
+  loadBar.style.width='100%';
+  loadStatus.textContent='Pronto!';
   await new Promise(r=>setTimeout(r,500));
   loadOverlay.classList.add('hidden');
-  modelsReady=true; btnStart.disabled=false; setStatus('PRONTO');
+  btnStart.disabled=false;
+  setStatus('PRONTO');
 }
 
 async function startCamera() {
@@ -262,149 +254,95 @@ async function startCamera() {
     stream = await navigator.mediaDevices.getUserMedia({ video:{ facingMode:'user', width:640, height:480 } });
     video.srcObject=stream; video.style.display='block'; snapshot.style.display='none';
     camLabel.textContent='AO VIVO'; btnStart.disabled=true;
-    btnCapture.disabled=false; btnLive.disabled=false; btnReset.disabled=false;
+    btnCapture.disabled=false; btnReset.disabled=false;
     setStatus('CÂMERA ATIVA');
   } catch(e) {
-    showError('Não foi possível acessar a câmera. Certifique-se de abrir o arquivo localmente e permitir o acesso.');
+    showError('Não foi possível acessar a câmera. Verifique as permissões do navegador.');
     setStatus('ERRO DE CÂMERA');
   }
 }
 
 function capture() {
   if (!stream) return;
-  stopLive();
-
-  // Captura snapshot visual (espelhado) só para exibição depois
   canvas.width=video.videoWidth||640; canvas.height=video.videoHeight||480;
   const ctx=canvas.getContext('2d');
   ctx.save(); ctx.translate(canvas.width,0); ctx.scale(-1,1);
   ctx.drawImage(video,0,0); ctx.restore();
   snapshot.src=canvas.toDataURL('image/jpeg',0.92);
-
-  // Analisa direto do <video> (sem espelhamento) — evita falha de detecção
   camLabel.textContent='CAPTURADO'; scanLine.classList.add('active');
-  btnCapture.disabled=true; btnLive.disabled=true;
-  emptyState.style.display='none'; loadingDots.classList.add('active');
-  setStatus('ANALISANDO...');
-
-  analyzeSnapshot(video).then(() => {
-    snapshot.style.display='block'; video.style.display='none';
-    overlay.getContext('2d').clearRect(0,0,overlay.width,overlay.height);
-  });
+  btnCapture.disabled=true; emptyState.style.display='none';
+  loadingDots.classList.add('active'); setStatus('ANALISANDO...');
+  $('block-msg').classList.remove('visible');
+  $('btn-vuse').disabled=true;
+  analyze(video).then(()=>{ snapshot.style.display='block'; video.style.display='none'; });
 }
 
-async function analyzeSnapshot(src) {
+async function analyze(source) {
   try {
     const result = await faceapi
-      .detectSingleFace(src, new faceapi.TinyFaceDetectorOptions({ inputSize: 512, scoreThreshold: 0.3 }))
+      .detectSingleFace(source, new faceapi.TinyFaceDetectorOptions({ inputSize:512, scoreThreshold:0.3 }))
       .withAgeAndGender().withFaceExpressions();
-
     loadingDots.classList.remove('active'); scanLine.classList.remove('active');
-
     if (!result) {
-      showError('⚠ Nenhum rosto detectado. Tente com melhor iluminação e olhando para a câmera.');
-      setStatus('SEM ROSTO'); emptyState.style.display='';
-      btnCapture.disabled=false; btnLive.disabled=false; return;
+      showError('⚠ Nenhum rosto detectado. Tente com melhor iluminação e olhando diretamente para a câmera.');
+      setStatus('SEM ROSTO DETECTADO'); emptyState.style.display='';
+      btnCapture.disabled=false; return;
     }
-    displayResults(result); setStatus('ANÁLISE COMPLETA');
+    showResults(result);
   } catch(e) {
-    loadingDots.classList.remove('active');
-    showError('Erro na análise: ' + e.message);
-    setStatus('ERRO'); console.error(e);
+    loadingDots.classList.remove('active'); scanLine.classList.remove('active');
+    showError('Erro na análise: '+e.message); setStatus('ERRO'); console.error(e);
   }
 }
 
-function displayResults(r, instant=false) {
+function showResults(r) {
   const age=Math.round(r.age);
-  const gender=GENDER_PT[r.gender]||r.gender;
+  const gender=GENDERS[r.gender]||r.gender;
   const gConf=Math.round(r.genderProbability*100);
-  const top=Object.entries(r.expressions).sort((a,b)=>b[1]-a[1])[0];
-  const emo=EMOTION_LABELS[top[0]]||top[0];
-  const eConf=Math.round(top[1]*100);
-
-  const delay = instant ? 0 : 100;
-  setTimeout(() => { document.getElementById('val-age').textContent=age+' anos'; document.getElementById('bar-age').style.width=Math.min(age*1.3,100)+'%'; document.getElementById('res-age').classList.add('visible'); }, delay);
-  setTimeout(() => { document.getElementById('val-sex').textContent=gender; document.getElementById('bar-sex').style.width=gConf+'%'; document.getElementById('conf-sex').textContent='Confiança: '+gConf+'%'; document.getElementById('res-sex').classList.add('visible'); }, instant?0:350);
-  setTimeout(() => { document.getElementById('val-mood').textContent=emo; document.getElementById('bar-mood').style.width=eConf+'%'; document.getElementById('conf-mood').textContent='Confiança: '+eConf+'%'; document.getElementById('res-mood').classList.add('visible'); }, instant?0:600);
+  const topEmo=Object.entries(r.expressions).sort((a,b)=>b[1]-a[1])[0];
+  const emo=EMOTIONS[topEmo[0]]||topEmo[0];
+  const eConf=Math.round(topEmo[1]*100);
+  setTimeout(()=>{ $('val-age').textContent=age+' anos'; $('bar-age').style.width=Math.min(age*1.3,100)+'%'; $('res-age').classList.add('visible'); },100);
+  setTimeout(()=>{ $('val-sex').textContent=gender; $('bar-sex').style.width=gConf+'%'; $('conf-sex').textContent='Confiança: '+gConf+'%'; $('res-sex').classList.add('visible'); },350);
+  setTimeout(()=>{ $('val-mood').textContent=emo; $('bar-mood').style.width=eConf+'%'; $('conf-mood').textContent='Confiança: '+eConf+'%'; $('res-mood').classList.add('visible'); },600);
+  setTimeout(()=>applyAgeGate(age),900);
 }
 
-function toggleLive() { liveMode ? stopLive() : startLive(); }
-
-function startLive() {
-  liveMode=true; btnLive.textContent='◼ Parar ao vivo'; btnLive.classList.add('active');
-  btnCapture.disabled=true; liveBadge.classList.add('show'); emptyState.style.display='none';
-  overlay.width=video.videoWidth||640; overlay.height=video.videoHeight||480;
-  setStatus('ANÁLISE AO VIVO');
-  liveInterval=setInterval(runLive,700);
-}
-
-function stopLive() {
-  liveMode=false; clearInterval(liveInterval); liveInterval=null;
-  btnLive.textContent='◈ Análise ao vivo'; btnLive.classList.remove('active');
-  btnCapture.disabled=false; liveBadge.classList.remove('show');
-  overlay.getContext('2d').clearRect(0,0,overlay.width,overlay.height);
-  if(stream) setStatus('CÂMERA ATIVA');
-}
-
-async function runLive() {
-  if(!stream||!modelsReady) return;
-  try {
-    const result = await faceapi
-      .detectSingleFace(video, new faceapi.TinyFaceDetectorOptions({inputSize:224}))
-      .withAgeAndGender().withFaceExpressions();
-
-    const ovCtx=overlay.getContext('2d');
-    ovCtx.clearRect(0,0,overlay.width,overlay.height);
-
-    if(!result) {
-      ['res-age','res-sex','res-mood'].forEach(id=>document.getElementById(id).classList.remove('visible'));
-      return;
-    }
-    // Draw mirrored bounding box
-    const b=result.detection.box;
-    const sw=overlay.width/(video.videoWidth||640), sh=overlay.height/(video.videoHeight||480);
-    const mx=overlay.width-(b.x+b.width)*sw;
-    ovCtx.strokeStyle='#00ffcc'; ovCtx.lineWidth=2;
-    ovCtx.strokeRect(mx, b.y*sh, b.width*sw, b.height*sh);
-    // Corner markers
-    const s=12;
-    ovCtx.strokeStyle='#00ffcc'; ovCtx.lineWidth=2;
-    [[mx,b.y*sh],[mx+b.width*sw,b.y*sh],[mx,b.y*sh+b.height*sh],[mx+b.width*sw,b.y*sh+b.height*sh]].forEach(([x,y],i)=>{
-      ovCtx.beginPath();
-      if(i===0){ovCtx.moveTo(x,y+s);ovCtx.lineTo(x,y);ovCtx.lineTo(x+s,y);}
-      if(i===1){ovCtx.moveTo(x-s,y);ovCtx.lineTo(x,y);ovCtx.lineTo(x,y+s);}
-      if(i===2){ovCtx.moveTo(x,y-s);ovCtx.lineTo(x,y);ovCtx.lineTo(x+s,y);}
-      if(i===3){ovCtx.moveTo(x-s,y);ovCtx.lineTo(x,y);ovCtx.lineTo(x,y-s);}
-      ovCtx.stroke();
-    });
-
-    displayResults(result, true);
-  } catch(e) { /* silently ignore */ }
+function applyAgeGate(age) {
+  const btn = $('btn-vuse');
+  if (age >= 21) {
+    btn.disabled=false;
+    $('block-msg').classList.remove('visible');
+    setStatus('✓ MAIOR DE 21 ANOS — ACESSO LIBERADO');
+  } else {
+    btn.disabled=true;
+    $('block-msg').classList.add('visible');
+    setStatus('✗ MENOR DE 21 ANOS — ACESSO NEGADO');
+  }
 }
 
 function resetCam() {
-  stopLive(); snapshot.style.display='none'; video.style.display='block';
+  snapshot.style.display='none'; video.style.display='block';
   scanLine.classList.remove('active'); camLabel.textContent='AGUARDANDO';
-  btnStart.disabled=false; btnCapture.disabled=true; btnLive.disabled=true; btnReset.disabled=true;
+  btnStart.disabled=false; btnCapture.disabled=true; btnReset.disabled=true;
   ['age','sex','mood'].forEach(k=>{
-    document.getElementById('res-'+k).classList.remove('visible');
-    const v=document.getElementById('val-'+k); if(v) v.textContent='—';
-    const b=document.getElementById('bar-'+k); if(b) b.style.width='0%';
+    $('res-'+k).classList.remove('visible');
+    $('val-'+k).textContent='—';
+    $('bar-'+k).style.width='0%';
   });
-  document.getElementById('conf-sex').textContent=''; document.getElementById('conf-mood').textContent='';
+  $('conf-sex').textContent=''; $('conf-mood').textContent='';
+  $('block-msg').classList.remove('visible');
+  $('btn-vuse').disabled=true;
   if(stream){stream.getTracks().forEach(t=>t.stop());stream=null;}
   emptyState.style.display=''; hideError(); setStatus('PRONTO');
   startCamera();
 }
 
 window.addEventListener('load',()=>{
-  // Wait for face-api script to load
-  function tryLoad() {
-    if(typeof faceapi !== 'undefined') {
-      loadModels().catch(e=>{ loadStatus.textContent='Erro: '+e.message; console.error(e); });
-    } else {
-      setTimeout(tryLoad, 200);
-    }
+  function tryLoad(){
+    if(typeof faceapi!=='undefined'){
+      loadModels().catch(e=>{ loadStatus.textContent='Erro ao carregar: '+e.message; });
+    } else { setTimeout(tryLoad,200); }
   }
   tryLoad();
 });
