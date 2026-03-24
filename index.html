@@ -273,26 +273,30 @@ async function startCamera() {
 function capture() {
   if (!stream) return;
   stopLive();
+
+  // Captura snapshot visual (espelhado) só para exibição depois
   canvas.width=video.videoWidth||640; canvas.height=video.videoHeight||480;
   const ctx=canvas.getContext('2d');
   ctx.save(); ctx.translate(canvas.width,0); ctx.scale(-1,1);
   ctx.drawImage(video,0,0); ctx.restore();
+  snapshot.src=canvas.toDataURL('image/jpeg',0.92);
 
-  const dataUrl=canvas.toDataURL('image/jpeg',0.92);
-  snapshot.src=dataUrl; snapshot.style.display='block'; video.style.display='none';
-  overlay.getContext('2d').clearRect(0,0,overlay.width,overlay.height);
-
+  // Analisa direto do <video> (sem espelhamento) — evita falha de detecção
   camLabel.textContent='CAPTURADO'; scanLine.classList.add('active');
   btnCapture.disabled=true; btnLive.disabled=true;
   emptyState.style.display='none'; loadingDots.classList.add('active');
   setStatus('ANALISANDO...');
-  analyzeSnapshot(canvas);
+
+  analyzeSnapshot(video).then(() => {
+    snapshot.style.display='block'; video.style.display='none';
+    overlay.getContext('2d').clearRect(0,0,overlay.width,overlay.height);
+  });
 }
 
 async function analyzeSnapshot(src) {
   try {
     const result = await faceapi
-      .detectSingleFace(src, new faceapi.TinyFaceDetectorOptions())
+      .detectSingleFace(src, new faceapi.TinyFaceDetectorOptions({ inputSize: 512, scoreThreshold: 0.3 }))
       .withAgeAndGender().withFaceExpressions();
 
     loadingDots.classList.remove('active'); scanLine.classList.remove('active');
