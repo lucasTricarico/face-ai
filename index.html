@@ -257,7 +257,7 @@ async function startCamera() {
     btnCapture.disabled=false; btnReset.disabled=false;
     setStatus('CÂMERA ATIVA');
   } catch(e) {
-    showError('Não foi possível acessar a câmera. Verifique as permissões do navegador.');
+    showError('Erro: ' + e.name + ' — ' + e.message);
     setStatus('ERRO DE CÂMERA');
   }
 }
